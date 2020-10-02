@@ -28,6 +28,7 @@ namespace FinanceProject
             else
             {
                 //Conectando com o bd
+                //TODO Tratar caso não consiga conectar com o banco
                 _service.TestDatabaseConnection();
             }
 
@@ -46,7 +47,8 @@ namespace FinanceProject
                 Console.WriteLine();
                 _options.Menu();
 
-                opMenu = _options.OptionChoose(0, 3);
+                //TODO OpMenu ser enum
+                opMenu = _options.OptionChoose(0, 4);
 
                 if (opMenu == 1)
                 {
@@ -80,7 +82,7 @@ namespace FinanceProject
                     {
                         items.ForEach(x =>
                         {
-                            Console.WriteLine($"-- {x.Name} ---------- R${x.InstallmentPrice.ToString("F2", CultureInfo.InvariantCulture)} --------- {x.BuyDate:dd/MM/yyyy}");
+                            Console.WriteLine($"-- {x.Name} ---------- R${x.Price.ToString("F2", CultureInfo.InvariantCulture)} --------- {x.BuyDate:dd/MM/yyyy}");
                             Console.WriteLine();
                         });
                         Console.WriteLine($"-- Total: R${baseValues.TotalSpent.ToString("F2", CultureInfo.InvariantCulture)}");
@@ -98,6 +100,21 @@ namespace FinanceProject
                     string nomeProc = Console.ReadLine();
 
                     _service.UpdateItem(nomeProc);
+
+                    Console.ReadLine();
+                }
+                else if (opMenu == 4)
+                {
+                    Console.Clear();
+                    _options.Title();
+
+                    Console.WriteLine("-- Deletar Item");
+
+                    Console.WriteLine("Nome do Item: ");
+                    string nomeProcDel = Console.ReadLine();
+                    Console.WriteLine("Preco total do Item: ");
+                    double precoProcDel = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
+                    _service.DeleteItem(nomeProcDel, precoProcDel);
 
                     Console.ReadLine();
                 }

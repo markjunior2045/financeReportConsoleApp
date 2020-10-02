@@ -120,11 +120,12 @@ namespace FinanceProject
                         Command.Parameters.AddWithValue("@buydate", novoItem.BuyDate);
                         Command.ExecuteNonQuery();
                         Connection.Close();
+                        Console.WriteLine("-- Item atualizado com sucesso!");
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Item não encontrado!");
+                    Console.WriteLine("-- Item não encontrado!");
                 }
                 if (Connection.State == ConnectionState.Open)
                     Connection.Close();
@@ -141,6 +142,68 @@ namespace FinanceProject
             }
         }
 
+        public void DeleteItem(string itemName, double itemPrice)
+        {
+            try
+            {
+                Item toDeleteItem = new Item();
+                Options options = new Options();
+
+                Connection.Open();
+                Command.Parameters.Clear();
+                Command.CommandText = $"SELECT * FROM item WHERE name LIKE '%{itemName}%' AND price LIKE '%{itemPrice.ToString(CultureInfo.InvariantCulture)}%'";
+                DataReader = Command.ExecuteReader();
+                DataReader.Read();
+                if (DataReader.HasRows)
+                {
+                    toDeleteItem.Id = DataReader.GetGuid(0);
+                    toDeleteItem.Name = DataReader.GetString(1);
+                    toDeleteItem.Price = DataReader.GetDouble(2);
+                    toDeleteItem.InstallmentsQuantity = DataReader.GetInt32(3);
+                    toDeleteItem.InstallmentPrice = DataReader.GetDouble(4);
+                    toDeleteItem.BuyDate = DataReader.GetDateTime(5);
+                    Connection.Close();
+                    Console.WriteLine($"Item: {toDeleteItem.Name}, R${toDeleteItem.Price.ToString("F2", CultureInfo.InvariantCulture)}, {toDeleteItem.InstallmentsQuantity} Parcela(s), {toDeleteItem.BuyDate:dd/MM/yyyy}");
+                    Console.WriteLine("-- (1)Item Correto / (2)Item Incorreto");
+                    int op = options.OptionChoose(1, 2);
+                    if (op == 2)
+                        return;
+                    else if (op == 1)
+                    {
+                        Console.WriteLine("-- Tem certeza que deseja DELETAR este item? (1)Sim / (2)Cancelar");
+                        op = options.OptionChoose(1, 2);
+                        if (op == 2)
+                            return;
+                        else
+                        {
+                            Connection.Open();
+                            Command.Parameters.Clear();
+                            Command.CommandText = "DELETE FROM item WHERE id = @id";
+                            Command.Parameters.AddWithValue("@id", toDeleteItem.Id);
+                            Command.ExecuteNonQuery();
+                            Connection.Close();
+                            Console.WriteLine("-- Item deletado com sucesso!");
+                        }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("-- Item não encontrado!");
+                }
+                if (Connection.State == ConnectionState.Open)
+                    Connection.Close();
+
+            }
+            catch (Exception error)
+            {
+                Console.WriteLine("-- Erro ao conectar com o Banco.");
+                Console.WriteLine();
+                Console.WriteLine(error);
+                Console.ReadLine();
+                if (Connection.State == ConnectionState.Open)
+                    Connection.Close();
+            }
+        }
         public List<Item> GetAllItems()
         {
             Item novoItem;
@@ -150,14 +213,15 @@ namespace FinanceProject
             {
                 Connection.Open();
                 Command.Parameters.Clear();
-                Command.CommandText = "SELECT name, installmentprice, buydate FROM item ORDER BY buydate";
+                Command.CommandText = "SELECT name, price, installmentprice, buydate FROM item ORDER BY buydate";
                 DataReader = Command.ExecuteReader();
                 while (DataReader.Read())
                 {
                     novoItem = new Item();
                     novoItem.Name = DataReader.GetString(0);
-                    novoItem.InstallmentPrice = DataReader.GetDouble(1);
-                    novoItem.BuyDate = DataReader.GetDateTime(2);
+                    novoItem.Price = DataReader.GetDouble(1);
+                    novoItem.InstallmentPrice = DataReader.GetDouble(2);
+                    novoItem.BuyDate = DataReader.GetDateTime(3);
                     items.Add(novoItem);
                 }
                 Connection.Close();

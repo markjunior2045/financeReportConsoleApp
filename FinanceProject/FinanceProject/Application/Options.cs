@@ -18,6 +18,7 @@ namespace FinanceProject
             Console.WriteLine("-- (1) Adicionar uma nova compra");
             Console.WriteLine("-- (2) Listar compras do Mes");
             Console.WriteLine("-- (3) Editar Item");
+            Console.WriteLine("-- (4) Deletar Item");
             Console.WriteLine("-- (0) Sair");
             Console.WriteLine();
         }
