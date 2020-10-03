@@ -18,21 +18,20 @@ namespace FinanceProject
             Command = Connection.CreateCommand();
         }
 
-        public void TestDatabaseConnection()
+        public bool TestDatabaseConnection()
         {
             try
             {
                 Connection.Open();
                 Connection.Close();
+                return true;
             }
-            catch (Exception error)
+            catch
             {
                 Console.WriteLine("-- Erro ao conectar com o Banco.");
-                Console.WriteLine();
-                Console.WriteLine(error);
-                Console.ReadLine();
                 if (Connection.State == ConnectionState.Open)
                     Connection.Close();
+                return false;
             }
         }
 
@@ -239,6 +238,25 @@ namespace FinanceProject
             return items;
         }
 
+        public bool ListAllItems()
+        {
+            List<Item> items = GetAllItems();
+
+            if (items.Count == 0)
+            {
+                Console.WriteLine("-- Não existem items na lista! --");
+                return false;
+            }
+            else
+            {
+                items.ForEach(x =>
+                {
+                    Console.WriteLine($"-- {x.Name} ---------- R${x.Price.ToString("F2", CultureInfo.InvariantCulture)} --------- {x.BuyDate:dd/MM/yyyy}");
+                    Console.WriteLine();
+                });
+                return true;
+            };
+        }
         public BaseValues GetBaseValues()
         {
             BaseValues baseValues = new BaseValues();

@@ -12,30 +12,33 @@ namespace FinanceProject
         {
             FinanceService _service = new FinanceService();
             Options _options = new Options();
-            int op = 0;
-            int opMenu = 0;
-            //string nomeProc;
-            List<Item> items;
-            Item novoItem = new Item();
-            BaseValues baseValues = new BaseValues();
+            
+            
 
             _options.Title();
             Console.WriteLine("-- Aperte 1 para iniciar ou 0 para sair");
-            op = _options.OptionChoose(0, 1);
+            int op = _options.OptionChoose(0, 1);
 
             if (op == 0)
                 return;
             else
             {
                 //Conectando com o bd
-                //TODO Tratar caso não consiga conectar com o banco
-                _service.TestDatabaseConnection();
+                //TODO Adicionar opção de tentar de novo ou sair
+                bool testConnection = _service.TestDatabaseConnection();
+                if (!testConnection)
+                {
+                    Console.WriteLine("-- A aplicação será encerrada");
+                    Console.ReadLine();
+                    return;
+                }
             }
 
+            int opMenu;
             do
             {
                 Console.Clear();
-                baseValues = _service.GetBaseValues();
+                BaseValues baseValues = _service.GetBaseValues();
 
                 _options.Title();
                 Console.WriteLine("-- Conectado com sucesso!");
@@ -52,7 +55,7 @@ namespace FinanceProject
 
                 if (opMenu == 1)
                 {
-                    novoItem = new Item();
+                    Item novoItem = new Item();
                     Console.Clear();
                     _options.Title();
                     Console.WriteLine("-- Adicionar Item");
@@ -73,20 +76,8 @@ namespace FinanceProject
                     Console.Clear();
                     _options.Title();
                     Console.WriteLine("-- Listar Itens");
-                    items = _service.GetAllItems();
-                    if (items.Count == 0)
-                    {
-                        Console.WriteLine("-- Não existem items na lista! --");
-                    }
-                    else
-                    {
-                        items.ForEach(x =>
-                        {
-                            Console.WriteLine($"-- {x.Name} ---------- R${x.Price.ToString("F2", CultureInfo.InvariantCulture)} --------- {x.BuyDate:dd/MM/yyyy}");
-                            Console.WriteLine();
-                        });
-                        Console.WriteLine($"-- Total: R${baseValues.TotalSpent.ToString("F2", CultureInfo.InvariantCulture)}");
-                    };
+                    _service.ListAllItems();
+                    Console.WriteLine($"-- Total: R${baseValues.TotalSpent.ToString("F2", CultureInfo.InvariantCulture)}");
                     Console.ReadLine();
                 }
                 else if (opMenu == 3)
@@ -109,13 +100,15 @@ namespace FinanceProject
                     _options.Title();
 
                     Console.WriteLine("-- Deletar Item");
-
-                    Console.WriteLine("Nome do Item: ");
-                    string nomeProcDel = Console.ReadLine();
-                    Console.WriteLine("Preco total do Item: ");
-                    double precoProcDel = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
-                    _service.DeleteItem(nomeProcDel, precoProcDel);
-
+                    bool list = _service.ListAllItems();
+                    if (list)
+                    {
+                        Console.WriteLine("Nome do Item: ");
+                        string nomeProcDel = Console.ReadLine();
+                        Console.WriteLine("Preco total do Item: ");
+                        double precoProcDel = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
+                        _service.DeleteItem(nomeProcDel, precoProcDel);
+                    }
                     Console.ReadLine();
                 }
                 else if (opMenu == 0)
