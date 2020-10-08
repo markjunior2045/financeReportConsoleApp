@@ -12,8 +12,8 @@ namespace FinanceProject
         {
             FinanceService _service = new FinanceService();
             Options _options = new Options();
-            
-            
+
+
 
             _options.Title();
             Console.WriteLine("-- Aperte 1 para iniciar ou 0 para sair");
@@ -59,16 +59,13 @@ namespace FinanceProject
                     Console.Clear();
                     _options.Title();
                     Console.WriteLine("-- Adicionar Item");
-
+                    Console.WriteLine();
                     Console.WriteLine("Nome: ");
                     novoItem.Name = Console.ReadLine();
                     Console.WriteLine("Preço: ");
                     novoItem.Price = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
-                    Console.WriteLine("Qnt Parcelas: ");
-                    novoItem.InstallmentsQuantity = int.Parse(Console.ReadLine());
-                    novoItem.InstallmentPrice = novoItem.Price / novoItem.InstallmentsQuantity;
                     novoItem.BuyDate = DateTime.Now;
-
+                    novoItem.AccountId = Guid.Parse("5950f311-1a13-4f95-ac68-01f4e2de87e3");
                     _service.InsertItem(novoItem);
                 }
                 else if (opMenu == 2)
@@ -76,8 +73,15 @@ namespace FinanceProject
                     Console.Clear();
                     _options.Title();
                     Console.WriteLine("-- Listar Itens");
-                    _service.ListAllItems();
-                    Console.WriteLine($"-- Total: R${baseValues.TotalSpent.ToString("F2", CultureInfo.InvariantCulture)}");
+                    Console.WriteLine();
+                    if (_service.HaveItems())
+                    {
+                        _service.ListAllItems();
+                        Console.WriteLine($"-- Total: R${baseValues.TotalSpent.ToString("F2", CultureInfo.InvariantCulture)}");
+                    }
+                    else
+                        Console.WriteLine("-- Não existem items na lista! --");
+
                     Console.ReadLine();
                 }
                 else if (opMenu == 3)
@@ -86,11 +90,17 @@ namespace FinanceProject
                     _options.Title();
 
                     Console.WriteLine("-- Editar Item");
+                    Console.WriteLine();
+                    if (_service.HaveItems())
+                    {
+                        _service.ListAllItems();
+                        Console.WriteLine("Nome do item: ");
+                        string nomeProc = Console.ReadLine();
 
-                    Console.WriteLine("Nome do item: ");
-                    string nomeProc = Console.ReadLine();
-
-                    _service.UpdateItem(nomeProc);
+                        _service.UpdateItem(nomeProc);
+                    }
+                    else
+                        Console.WriteLine("-- Não existem items na lista! --");
 
                     Console.ReadLine();
                 }
@@ -100,9 +110,10 @@ namespace FinanceProject
                     _options.Title();
 
                     Console.WriteLine("-- Deletar Item");
-                    bool list = _service.ListAllItems();
-                    if (list)
+                    Console.WriteLine();
+                    if (_service.HaveItems())
                     {
+                        _service.ListAllItems();
                         Console.WriteLine("Nome do Item: ");
                         string nomeProcDel = Console.ReadLine();
                         Console.WriteLine("Preco total do Item: ");

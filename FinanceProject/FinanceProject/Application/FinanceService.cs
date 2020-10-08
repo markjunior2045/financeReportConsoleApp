@@ -35,6 +35,31 @@ namespace FinanceProject
             }
         }
 
+        public bool HaveItems()
+        {
+            try
+            {
+                Connection.Open();
+                Command.CommandText = "SELECT COUNT(id) FROM item";
+                DataReader = Command.ExecuteReader();
+                DataReader.Read();
+                int itemCount = DataReader.GetInt32(0);
+                Connection.Close();
+
+                if (itemCount > 0)
+                    return true;
+                else
+                    return false;
+            }
+            catch
+            {
+                Console.WriteLine("-- Erro ao conectar com o Banco.");
+                if (Connection.State == ConnectionState.Open)
+                    Connection.Close();
+                return false;
+            }
+        }
+
         public void InsertItem(Item item)
         {
             if (item == null)
@@ -47,12 +72,11 @@ namespace FinanceProject
             {
                 Connection.Open();
                 Command.Parameters.Clear();
-                Command.CommandText = "INSERT INTO item (id, name, price, installments, installmentprice, buydate) VALUES (@id,@name,@price,@installmentsqtd,@installmentprice,@buydate)";
+                Command.CommandText = "INSERT INTO item (id, accountid,name, price, buydate) VALUES (@id,@accountid,@name,@price,@buydate)";
                 Command.Parameters.AddWithValue("@id", Guid.NewGuid());
+                Command.Parameters.AddWithValue("@accountid", item.AccountId);
                 Command.Parameters.AddWithValue("@name", item.Name);
                 Command.Parameters.AddWithValue("@price", item.Price);
-                Command.Parameters.AddWithValue("@installmentsqtd", item.InstallmentsQuantity);
-                Command.Parameters.AddWithValue("@installmentprice", item.InstallmentPrice);
                 Command.Parameters.AddWithValue("@buydate", item.BuyDate);
                 Command.ExecuteNonQuery();
                 Connection.Close();
@@ -87,11 +111,9 @@ namespace FinanceProject
                     novoItem.Id = DataReader.GetGuid(0);
                     novoItem.Name = DataReader.GetString(1);
                     novoItem.Price = DataReader.GetDouble(2);
-                    novoItem.InstallmentsQuantity = DataReader.GetInt32(3);
-                    novoItem.InstallmentPrice = DataReader.GetDouble(4);
                     novoItem.BuyDate = DataReader.GetDateTime(5);
                     Connection.Close();
-                    Console.WriteLine($"Item: {novoItem.Name}, R${novoItem.Price.ToString("F2", CultureInfo.InvariantCulture)}, {novoItem.InstallmentsQuantity} Parcela(s), {novoItem.BuyDate:dd/MM/yyyy}");
+                    Console.WriteLine($"Item: {novoItem.Name}, R${novoItem.Price.ToString("F2", CultureInfo.InvariantCulture)}, {novoItem.BuyDate:dd/MM/yyyy}");
                     Console.WriteLine("-- (1)Item Correto / (2)Item Incorreto");
                     int op = options.OptionChoose(1, 2);
                     if (op == 2)
@@ -102,20 +124,15 @@ namespace FinanceProject
                         novoItem.Name = Console.ReadLine();
                         Console.WriteLine("Preço: ");
                         novoItem.Price = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
-                        Console.WriteLine("Parcelas: ");
-                        novoItem.InstallmentsQuantity = int.Parse(Console.ReadLine());
-                        novoItem.InstallmentPrice = novoItem.Price / novoItem.InstallmentsQuantity;
                         //Console.WriteLine("Data de compra: ");
                         novoItem.BuyDate = DateTime.Now;
 
                         Connection.Open();
                         Command.Parameters.Clear();
-                        Command.CommandText = "UPDATE item SET name = @name, price = @price, installments = @installmentsqtd, installmentprice = @installmentprice, buydate = @buydate WHERE id = @id";
+                        Command.CommandText = "UPDATE item SET name = @name, price = @price, buydate = @buydate WHERE id = @id";
                         Command.Parameters.AddWithValue("@id", novoItem.Id);
                         Command.Parameters.AddWithValue("@name", novoItem.Name);
                         Command.Parameters.AddWithValue("@price", novoItem.Price);
-                        Command.Parameters.AddWithValue("@installmentsqtd", novoItem.InstallmentsQuantity);
-                        Command.Parameters.AddWithValue("@installmentprice", novoItem.InstallmentPrice);
                         Command.Parameters.AddWithValue("@buydate", novoItem.BuyDate);
                         Command.ExecuteNonQuery();
                         Connection.Close();
@@ -156,13 +173,11 @@ namespace FinanceProject
                 if (DataReader.HasRows)
                 {
                     toDeleteItem.Id = DataReader.GetGuid(0);
-                    toDeleteItem.Name = DataReader.GetString(1);
-                    toDeleteItem.Price = DataReader.GetDouble(2);
-                    toDeleteItem.InstallmentsQuantity = DataReader.GetInt32(3);
-                    toDeleteItem.InstallmentPrice = DataReader.GetDouble(4);
-                    toDeleteItem.BuyDate = DataReader.GetDateTime(5);
+                    toDeleteItem.Name = DataReader.GetString(2);
+                    toDeleteItem.Price = DataReader.GetDouble(3);
+                    toDeleteItem.BuyDate = DataReader.GetDateTime(4);
                     Connection.Close();
-                    Console.WriteLine($"Item: {toDeleteItem.Name}, R${toDeleteItem.Price.ToString("F2", CultureInfo.InvariantCulture)}, {toDeleteItem.InstallmentsQuantity} Parcela(s), {toDeleteItem.BuyDate:dd/MM/yyyy}");
+                    Console.WriteLine($"Item: {toDeleteItem.Name}, R${toDeleteItem.Price.ToString("F2", CultureInfo.InvariantCulture)}, {toDeleteItem.BuyDate:dd/MM/yyyy}");
                     Console.WriteLine("-- (1)Item Correto / (2)Item Incorreto");
                     int op = options.OptionChoose(1, 2);
                     if (op == 2)
@@ -212,15 +227,14 @@ namespace FinanceProject
             {
                 Connection.Open();
                 Command.Parameters.Clear();
-                Command.CommandText = "SELECT name, price, installmentprice, buydate FROM item ORDER BY buydate";
+                Command.CommandText = "SELECT name, price, buydate FROM item ORDER BY buydate";
                 DataReader = Command.ExecuteReader();
                 while (DataReader.Read())
                 {
                     novoItem = new Item();
                     novoItem.Name = DataReader.GetString(0);
                     novoItem.Price = DataReader.GetDouble(1);
-                    novoItem.InstallmentPrice = DataReader.GetDouble(2);
-                    novoItem.BuyDate = DataReader.GetDateTime(3);
+                    novoItem.BuyDate = DataReader.GetDateTime(2);
                     items.Add(novoItem);
                 }
                 Connection.Close();
@@ -238,24 +252,15 @@ namespace FinanceProject
             return items;
         }
 
-        public bool ListAllItems()
+        public void ListAllItems()
         {
             List<Item> items = GetAllItems();
 
-            if (items.Count == 0)
+            items.ForEach(x =>
             {
-                Console.WriteLine("-- Não existem items na lista! --");
-                return false;
-            }
-            else
-            {
-                items.ForEach(x =>
-                {
-                    Console.WriteLine($"-- {x.Name} ---------- R${x.Price.ToString("F2", CultureInfo.InvariantCulture)} --------- {x.BuyDate:dd/MM/yyyy}");
-                    Console.WriteLine();
-                });
-                return true;
-            };
+                Console.WriteLine($"-- {x.Name} ---------- R${x.Price.ToString("F2", CultureInfo.InvariantCulture)} --------- {x.BuyDate:dd/MM/yyyy}");
+                Console.WriteLine();
+            });
         }
         public BaseValues GetBaseValues()
         {
@@ -270,7 +275,7 @@ namespace FinanceProject
             Connection.Close();
 
             Connection.Open();
-            Command.CommandText = "SELECT installmentprice FROM item";
+            Command.CommandText = "SELECT price FROM item";
             DataReader = Command.ExecuteReader();
             while (DataReader.Read())
                 baseValues.TotalSpent += DataReader.GetDouble(0);

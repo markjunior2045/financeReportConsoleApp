@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\T-Gamer\\Desktop\\Finance Report\\FinanceProject\\FinanceProject\\FinanceProject.csproj": {}
+    "D:\\Markjunior\\Finance Report\\FinanceProject\\FinanceProject\\FinanceProject.csproj": {}
   },
   "projects": {
-    "C:\\Users\\T-Gamer\\Desktop\\Finance Report\\FinanceProject\\FinanceProject\\FinanceProject.csproj": {
+    "D:\\Markjunior\\Finance Report\\FinanceProject\\FinanceProject\\FinanceProject.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\T-Gamer\\Desktop\\Finance Report\\FinanceProject\\FinanceProject\\FinanceProject.csproj",
+        "projectUniqueName": "D:\\Markjunior\\Finance Report\\FinanceProject\\FinanceProject\\FinanceProject.csproj",
         "projectName": "FinanceProject",
-        "projectPath": "C:\\Users\\T-Gamer\\Desktop\\Finance Report\\FinanceProject\\FinanceProject\\FinanceProject.csproj",
+        "projectPath": "D:\\Markjunior\\Finance Report\\FinanceProject\\FinanceProject\\FinanceProject.csproj",
         "packagesPath": "C:\\Users\\T-Gamer\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\T-Gamer\\Desktop\\Finance Report\\FinanceProject\\FinanceProject\\obj\\",
+        "outputPath": "D:\\Markjunior\\Finance Report\\FinanceProject\\FinanceProject\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\T-Gamer\\AppData\\Roaming\\NuGet\\NuGet.Config",
