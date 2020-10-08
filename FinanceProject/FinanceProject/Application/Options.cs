@@ -1,4 +1,6 @@
-﻿using System;
+﻿using FinanceProject.Application;
+using FinanceProject.Classes;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,6 +8,8 @@ namespace FinanceProject
 {
     class Options
     {
+        AccountService _accountService = new AccountService();
+
         public void Title()
         {
             Console.WriteLine("-- Sistema de Gerenciamento Financeiro Pessoal");
@@ -42,6 +46,29 @@ namespace FinanceProject
             } while (answer < min || answer > max);
 
             return answer;
+        }
+
+        public void LoginScreen()
+        {
+            bool tryLogin = true;
+            do
+            {
+                Console.Clear();
+                Title();
+                Console.WriteLine("Nome de usuário: ");
+                string username = Console.ReadLine();
+                Console.WriteLine("Senha: ");
+                string password = Console.ReadLine();
+                Account account = _accountService.Login(username, password);
+                if (account == null)
+                {
+                    Console.WriteLine("-- Usuário ou senha incorretos!");
+                    Console.ReadLine();
+                }
+                else
+                    tryLogin = false;
+
+            } while (tryLogin);
         }
     }
 }

@@ -28,11 +28,15 @@ namespace FinanceProject
                 bool testConnection = _service.TestDatabaseConnection();
                 if (!testConnection)
                 {
+                    Console.WriteLine("Erro ao conectar com o banco");
                     Console.WriteLine("-- A aplicação será encerrada");
                     Console.ReadLine();
                     return;
                 }
             }
+
+            //TODO Login screen
+            _options.LoginScreen();
 
             int opMenu;
             do

@@ -1,4 +1,5 @@
-﻿using MySql.Data.MySqlClient;
+﻿using FinanceProject.Classes;
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -7,34 +8,8 @@ using System.Text;
 
 namespace FinanceProject
 {
-    class FinanceService
+    class FinanceService : DatabaseConfig
     {
-        private readonly MySqlConnection Connection = new MySqlConnection("Server=localhost;Port=3306;Database=finance;Uid=root;Pwd='';");
-        private readonly MySqlCommand Command;
-        private MySqlDataReader DataReader;
-
-        public FinanceService()
-        {
-            Command = Connection.CreateCommand();
-        }
-
-        public bool TestDatabaseConnection()
-        {
-            try
-            {
-                Connection.Open();
-                Connection.Close();
-                return true;
-            }
-            catch
-            {
-                Console.WriteLine("-- Erro ao conectar com o Banco.");
-                if (Connection.State == ConnectionState.Open)
-                    Connection.Close();
-                return false;
-            }
-        }
-
         public bool HaveItems()
         {
             try
@@ -141,11 +116,9 @@ namespace FinanceProject
                 }
                 else
                 {
+                    Connection.Close();
                     Console.WriteLine("-- Item não encontrado!");
                 }
-                if (Connection.State == ConnectionState.Open)
-                    Connection.Close();
-
             }
             catch (Exception error)
             {
