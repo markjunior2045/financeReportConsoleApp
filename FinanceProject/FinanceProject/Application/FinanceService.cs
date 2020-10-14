@@ -10,12 +10,12 @@ namespace FinanceProject
 {
     class FinanceService : DatabaseConfig
     {
-        public bool HaveItems()
+        public bool HaveItems(Guid accountId)
         {
             try
             {
                 Connection.Open();
-                Command.CommandText = "SELECT COUNT(id) FROM item";
+                Command.CommandText = $"SELECT COUNT(id) FROM item WHERE accountid = '{accountId}'";
                 DataReader = Command.ExecuteReader();
                 DataReader.Read();
                 int itemCount = DataReader.GetInt32(0);
@@ -69,7 +69,7 @@ namespace FinanceProject
             }
         }
 
-        public void UpdateItem(string nomeProc)
+        public void UpdateItem(string nomeProc, Guid accountId)
         {
             try
             {
@@ -78,15 +78,15 @@ namespace FinanceProject
 
                 Connection.Open();
                 Command.Parameters.Clear();
-                Command.CommandText = $"SELECT * FROM item WHERE name LIKE '%{nomeProc}%'";
+                Command.CommandText = $"SELECT * FROM item WHERE name LIKE '%{nomeProc}%' AND accountid = '{accountId}'";
                 DataReader = Command.ExecuteReader();
                 DataReader.Read();
                 if (DataReader.HasRows)
                 {
                     novoItem.Id = DataReader.GetGuid(0);
-                    novoItem.Name = DataReader.GetString(1);
-                    novoItem.Price = DataReader.GetDouble(2);
-                    novoItem.BuyDate = DataReader.GetDateTime(5);
+                    novoItem.Name = DataReader.GetString(2);
+                    novoItem.Price = DataReader.GetDouble(3);
+                    novoItem.BuyDate = DataReader.GetDateTime(4);
                     Connection.Close();
                     Console.WriteLine($"Item: {novoItem.Name}, R${novoItem.Price.ToString("F2", CultureInfo.InvariantCulture)}, {novoItem.BuyDate:dd/MM/yyyy}");
                     Console.WriteLine("-- (1)Item Correto / (2)Item Incorreto");
@@ -131,7 +131,7 @@ namespace FinanceProject
             }
         }
 
-        public void DeleteItem(string itemName, double itemPrice)
+        public void DeleteItem(string itemName, double itemPrice, Guid accountId)
         {
             try
             {
@@ -140,7 +140,7 @@ namespace FinanceProject
 
                 Connection.Open();
                 Command.Parameters.Clear();
-                Command.CommandText = $"SELECT * FROM item WHERE name LIKE '%{itemName}%' AND price LIKE '%{itemPrice.ToString(CultureInfo.InvariantCulture)}%'";
+                Command.CommandText = $"SELECT * FROM item WHERE name LIKE '%{itemName}%' AND price LIKE '%{itemPrice.ToString(CultureInfo.InvariantCulture)}%' AND accountid = '{accountId}'";
                 DataReader = Command.ExecuteReader();
                 DataReader.Read();
                 if (DataReader.HasRows)
@@ -191,7 +191,7 @@ namespace FinanceProject
                     Connection.Close();
             }
         }
-        public List<Item> GetAllItems()
+        public List<Item> GetAllItems(Guid accountId)
         {
             Item novoItem;
             List<Item> items = new List<Item>();
@@ -200,7 +200,7 @@ namespace FinanceProject
             {
                 Connection.Open();
                 Command.Parameters.Clear();
-                Command.CommandText = "SELECT name, price, buydate FROM item ORDER BY buydate";
+                Command.CommandText = $"SELECT name, price, buydate FROM item WHERE accountid = '{accountId}' ORDER BY buydate";
                 DataReader = Command.ExecuteReader();
                 while (DataReader.Read())
                 {
@@ -225,9 +225,9 @@ namespace FinanceProject
             return items;
         }
 
-        public void ListAllItems()
+        public void ListAllItems(Guid accountId)
         {
-            List<Item> items = GetAllItems();
+            List<Item> items = GetAllItems(accountId);
 
             items.ForEach(x =>
             {
@@ -235,28 +235,45 @@ namespace FinanceProject
                 Console.WriteLine();
             });
         }
-        public BaseValues GetBaseValues()
+
+        public void SetNewAccountBaseValues(Guid accountId,double salary, double savePercentage)
+        {
+            savePercentage = savePercentage / 100;
+            double available = (salary - (savePercentage * salary));
+            Connection.Open();
+            Command.CommandText = $"INSERT INTO salary VALUES ('{Guid.NewGuid()}','{accountId}',{salary},{available})";
+            Command.ExecuteNonQuery();
+            Connection.Close();
+        }
+
+        public BaseValues GetBaseValues(Guid accountId)
         {
             BaseValues baseValues = new BaseValues();
+            try
+            {
+                Connection.Open();
+                Command.CommandText = $"SELECT * FROM salary WHERE accountid = '{accountId}'";
+                DataReader = Command.ExecuteReader();
+                DataReader.Read();
+                baseValues.Salary = DataReader.GetDouble(2);
+                baseValues.SalaryAvailable = DataReader.GetDouble(3);
+                Connection.Close();
 
-            Connection.Open();
-            Command.CommandText = "SELECT * FROM salary";
-            DataReader = Command.ExecuteReader();
-            DataReader.Read();
-            baseValues.Salary = DataReader.GetDouble(0);
-            baseValues.SalaryAvailable = DataReader.GetDouble(1);
-            Connection.Close();
+                Connection.Open();
+                Command.CommandText = "SELECT price FROM item";
+                DataReader = Command.ExecuteReader();
+                while (DataReader.Read())
+                    baseValues.TotalSpent += DataReader.GetDouble(0);
+                Connection.Close();
 
-            Connection.Open();
-            Command.CommandText = "SELECT price FROM item";
-            DataReader = Command.ExecuteReader();
-            while (DataReader.Read())
-                baseValues.TotalSpent += DataReader.GetDouble(0);
-            Connection.Close();
+                baseValues.TotalAvailable = baseValues.SalaryAvailable - baseValues.TotalSpent;
 
-            baseValues.TotalAvailable = baseValues.SalaryAvailable - baseValues.TotalSpent;
-
-            return baseValues;
+                return baseValues;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

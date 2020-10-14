@@ -48,27 +48,64 @@ namespace FinanceProject
             return answer;
         }
 
-        public void LoginScreen()
+        public Account LoginScreen()
         {
             bool tryLogin = true;
+            Account account;
             do
             {
                 Console.Clear();
                 Title();
-                Console.WriteLine("Nome de usuário: ");
+                Console.WriteLine("-- Nome de usuário: ");
                 string username = Console.ReadLine();
-                Console.WriteLine("Senha: ");
+                Console.WriteLine("-- Senha: ");
                 string password = Console.ReadLine();
-                Account account = _accountService.Login(username, password);
+                account = _accountService.Login(username, password);
                 if (account == null)
                 {
-                    Console.WriteLine("-- Usuário ou senha incorretos!");
+                    Console.WriteLine("-- Usuário ou senha incorretos! Aperte enter e tente novamente.");
                     Console.ReadLine();
                 }
                 else
                     tryLogin = false;
 
             } while (tryLogin);
+
+            return account;
+        }
+
+        public Account CreateAccount()
+        {
+            bool tryLogin = true;
+            Account newAccount = new Account();
+            do
+            {
+                Console.Clear();
+                Title();
+                Console.WriteLine("-- Nome de usuário (Max 15 dig.): ");
+                string username = Console.ReadLine();
+                Console.WriteLine("-- Senha (Max 10 dig.): ");
+                string password = Console.ReadLine();
+                Console.WriteLine("-- Salário: ");
+                double salary = double.Parse(Console.ReadLine());
+                Console.WriteLine("-- Quanto a ser guardado? (Padrão = 30): ");
+                string save = Console.ReadLine();
+                if (save == string.Empty)
+                    save = "30";
+
+                if (username.Length > 15 || password.Length > 10)
+                {
+                    Console.WriteLine("-- Usuário ou senha inválidos! Aperte enter e tente novamente.");
+                    Console.ReadLine();
+                }
+                else
+                {
+                    newAccount = _accountService.CreateAccount(username, password,salary,int.Parse(save));
+                    tryLogin = false;
+                }
+            } while (tryLogin);
+
+            return newAccount;
         }
     }
 }

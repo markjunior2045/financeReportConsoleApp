@@ -7,6 +7,8 @@ namespace FinanceProject.Application
 {
     class AccountService : DatabaseConfig
     {
+        FinanceService _financeService = new FinanceService();
+
         public Account Login(string username, string password)
         {
             Connection.Open();
@@ -27,6 +29,19 @@ namespace FinanceProject.Application
                 Connection.Close();
                 return null;
             }
+        }
+
+        public Account CreateAccount(string username, string password, double salary, int savePercentage)
+        {
+            Account newAccount = new Account(Guid.NewGuid(),username,password);
+            Connection.Open();
+            Command.CommandText = $"INSERT INTO account VALUES ('{newAccount.Id}','{newAccount.Username}','{newAccount.Password}')";
+            Command.ExecuteNonQuery();
+            Connection.Close();
+
+            _financeService.SetNewAccountBaseValues(newAccount.Id,salary, savePercentage);
+            
+            return newAccount;
         }
     }
 }
