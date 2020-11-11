@@ -41,7 +41,8 @@ namespace FinanceProject
 
             Console.Clear();
             _options.Title();
-            Console.WriteLine("Logar (0) / Criar conta (1)");
+            Console.WriteLine("Logar (0)");
+            Console.WriteLine("Criar conta (1)");
             op = _options.OptionChoose(0, 1);
             if (op == 0)
                 LoggedUser = _options.LoginScreen();
